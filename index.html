@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Negative Number Practice</title>
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 40px auto;
+      max-width: 700px;
+      padding: 20px;
+      background-color: #f9fafb;
+      color: #333;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    input[type="checkbox"] {
+      margin-right: 6px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 18px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .feedback {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.2em;
+      text-align: center;
+    }
+    #question {
+      margin: 20px 0;
+      font-size: 1.5em;
+      text-align: center;
+    }
+    #giveUpButton {
+      display: none; /* Initially hidden */
+    }
+    @media (max-width: 600px) {
+      body {
+        margin: 20px 10px;
+        padding: 15px;
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Practice Negative Numbers</h1>
+
+  <label>Choose operations:</label>
+  <input type="checkbox" id="addition" checked> Addition
+  <input type="checkbox" id="subtraction" checked> Subtraction
+  <input type="checkbox" id="multiplication" checked> Multiplication
+  <input type="checkbox" id="division" checked> Division<br><br>
+
+  <label>Minimum value:</label>
+  <input type="number" id="minValue" value="-10"><br>
+
+  <label>Maximum value:</label>
+  <input type="number" id="maxValue" value="10"><br><br>
+
+  <button onclick="generateQuestion()">Generate Question</button><br><br>
+
+  <div id="question"></div><br>
+
+  <input type="number" id="userAnswer">
+  <button onclick="checkAnswer()">Check Answer</button><br><br>
+
+  <div class="feedback" id="feedback"></div><br>
+
+  <button id="giveUpButton" onclick="giveUp()">Give Up</button>
+
+  <script>
+    let currentQuestion = {};
+    let attempts = 0;
+
+    function generateQuestion() {
+      const min = parseInt(document.getElementById('minValue').value);
+      const max = parseInt(document.getElementById('maxValue').value);
+
+      const operations = [];
+      if (document.getElementById('addition').checked) operations.push('+');
+      if (document.getElementById('subtraction').checked) operations.push('-');
+      if (document.getElementById('multiplication').checked) operations.push('\\times');
+      if (document.getElementById('division').checked) operations.push('\\div');
+
+      let validQuestion = false;
+      attempts = 0;
+      document.getElementById('giveUpButton').style.display = 'none';
+
+      while (!validQuestion) {
+        const operation = operations[Math.floor(Math.random() * operations.length)];
+        let num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+        let num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+
+        while (operation === '\\div' && num2 === 0) {
+          num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        if (operation === '\\div' && (num1 % num2 !== 0)) {
+          num1 = num1 * num2;
+        }
+
+        let answer;
+        switch (operation) {
+          case '+': answer = num1 + num2; break;
+          case '-': answer = num1 - num2; break;
+          case '\\times': answer = num1 * num2; break;
+          case '\\div': answer = num1 / num2; break;
+        }
+
+        if (num1 < 0 || num2 < 0 || answer < 0) {
+          validQuestion = true;
+          currentQuestion = { num1, num2, operation };
+
+          const questionText = (operation === '\\div')
+            ? `\\( ${num1} ${operation} ${num2} = ? \\)`
+            : `\\( ${num1} ${operation} ${num2} = ? \\)`;
+          document.getElementById('question').innerHTML = questionText;
+          MathJax.Hub.Queue(["Typeset", MathJax.Hub, "question"]);
+          document.getElementById('feedback').innerText = '';
+        }
+      }
+    }
+
+    function checkAnswer() {
+      const userAnswer = parseFloat(document.getElementById('userAnswer').value);
+      let correctAnswer;
+
+      switch (currentQuestion.operation) {
+        case '+': correctAnswer = currentQuestion.num1 + currentQuestion.num2; break;
+        case '-': correctAnswer = currentQuestion.num1 - currentQuestion.num2; break;
+        case '\\times': correctAnswer = currentQuestion.num1 * currentQuestion.num2; break;
+        case '\\div': correctAnswer = currentQuestion.num1 / currentQuestion.num2; break;
+      }
+
+      if (userAnswer === correctAnswer) {
+        document.getElementById('feedback').innerText = 'Correct! Well done!';
+        document.getElementById('giveUpButton').style.display = 'none';
+      } else {
+        attempts++;
+        document.getElementById('feedback').innerText = 'Wrong. Try again!';
+        if (attempts >= 3) {
+          document.getElementById('giveUpButton').style.display = 'inline-block';
+        }
+      }
+    }
+
+    function giveUp() {
+      const correctAnswer = currentQuestion.operation === '+'
+        ? currentQuestion.num1 + currentQuestion.num2
+        : currentQuestion.operation === '-'
+        ? currentQuestion.num1 - currentQuestion.num2
+        : currentQuestion.operation === '\\times'
+        ? currentQuestion.num1 * currentQuestion.num2
+        : currentQuestion.num1 / currentQuestion.num2;
+
+      document.getElementById('feedback').innerText = `The correct answer is: ${correctAnswer}.`;
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, "feedback"]);
+    }
+  </script>
+</body>
+</html>
